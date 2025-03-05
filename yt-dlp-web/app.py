@@ -12,7 +12,7 @@ app = Flask(__name__)  # 创建 Flask 应用
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
 
 # 设置下载目录
-DOWNLOAD_FOLDER = "/opt/yt-dlp-web/downloads"
+DOWNLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "downloads")
 os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)  # 如果目录不存在，则创建
 
 # 存储 session_id 到 socket 连接的映射
@@ -66,7 +66,7 @@ def download_video():
 
     try:
         # 获取视频标题
-        title_command = ["/opt/yt-dlp", "--get-title", url]
+        title_command = [os.path.join(os.path.dirname(__file__), "yt-dlp"), "--get-title", url]
         video_title = subprocess.check_output(title_command, text=True).strip()
         if resolution == "最佳画质":
             video_filename = f"{video_title}.%(ext)s"
@@ -86,7 +86,7 @@ def download_video():
         socketio.emit("log", {"message": "开始下载..."}, room=session_id)
 
         # 下载命令，添加画质选项
-        command = ["/opt/yt-dlp", "-f", quality, "-o", f"{DOWNLOAD_FOLDER}/{video_filename}", url]
+        command = [os.path.join(os.path.dirname(__file__), "yt-dlp"), "-f", quality, "-o", f"{DOWNLOAD_FOLDER}/{video_filename}", url]
 
         # 启动独立的 yt-dlp 进程
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
